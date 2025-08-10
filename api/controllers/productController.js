@@ -1,15 +1,23 @@
-const Product = require('../models/productModel');
+// const Product = require('../models/productModel');
 const asyncErrorHandler = require('../middlewares/helpers/asyncErrorHandler');
-const SearchFeatures = require('../utils/searchFeatures');
+// const SearchFeatures = require('../utils/searchFeatures');
 const ErrorHandler = require('../utils/errorHandler');
-const cloudinary = require('cloudinary');
+// const cloudinary = require('cloudinary');
+const { getFilterFromGemini } = require('../utils/gemini');
+
+const getProducts = async () => {
+    const response = await fetch('https://fakestoreapi.com/products');
+    const data = await response.json();
+    return data;
+}
+
 
 // Get All Products
 exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
 
-    const resultPerPage = 12;
+    /* const resultPerPage = 12;
     const productsCount = await Product.countDocuments();
-    // console.log(req.query);
+    console.log(req.query);
 
     const searchFeature = new SearchFeatures(Product.find(), req.query)
         .search()
@@ -20,7 +28,9 @@ exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
 
     searchFeature.pagination(resultPerPage);
 
-    products = await searchFeature.query.clone();
+    products = await searchFeature.query; */
+
+    const products = await getProducts();
 
     res.status(200).json({
         success: true,
@@ -31,9 +41,22 @@ exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
     });
 });
 
+exports.searchProductsUsingAI = asyncErrorHandler(async (req, res, next) => {
+    const products = await getProducts();
+    const query = req.query;
+    const searchQuery = query["query"];
+    const filteredProducts = await getFilterFromGemini(searchQuery, products);
+    res.status(200).json({
+        success: true,
+        products: filteredProducts.filteredProducts,
+        filterCriteria: filteredProducts.filterCriteria,
+    });
+});
+
 // Get All Products ---Product Sliders
 exports.getProducts = asyncErrorHandler(async (req, res, next) => {
-    const products = await Product.find();
+    // const products = await Product.find();
+    const products = await getProducts();
 
     res.status(200).json({
         success: true,
@@ -44,11 +67,11 @@ exports.getProducts = asyncErrorHandler(async (req, res, next) => {
 // Get Product Details
 exports.getProductDetails = asyncErrorHandler(async (req, res, next) => {
 
-    const product = await Product.findById(req.params.id);
+    // const product = await Product.findById(req.params.id);
 
-    if (!product) {
-        return next(new ErrorHandler("Product Not Found", 404));
-    }
+    // if (!product) {
+    //     return next(new ErrorHandler("Product Not Found", 404));
+    // }
 
     res.status(200).json({
         success: true,
@@ -57,7 +80,7 @@ exports.getProductDetails = asyncErrorHandler(async (req, res, next) => {
 });
 
 // Get All Products ---ADMIN
-exports.getAdminProducts = asyncErrorHandler(async (req, res, next) => {
+/* exports.getAdminProducts = asyncErrorHandler(async (req, res, next) => {
     const products = await Product.find();
 
     res.status(200).json({
@@ -309,4 +332,4 @@ exports.deleteReview = asyncErrorHandler(async (req, res, next) => {
     res.status(200).json({
         success: true,
     });
-});
+}); */

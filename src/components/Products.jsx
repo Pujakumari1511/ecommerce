@@ -12,6 +12,7 @@ const Products = () => {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState(data);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   let componentMounted = true;
 
   const dispatch = useDispatch();
@@ -20,13 +21,30 @@ const Products = () => {
     dispatch(addCart(product));
   };
 
+  const onSearchQueryChange = (e) => {
+    setSearchQuery(e.target.value);
+  } 
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const response = await fetch("http://localhost:4000/api/v1/products/search?query="+searchQuery)
+    if (componentMounted && response.status === 200) {
+      const { products } = await response.json();
+      setFilter(products);
+    }
+    setLoading(false);
+    setSearchQuery("");
+  }
+
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
-      const response = await fetch("https://fakestoreapi.com/products/");
+      const response = await fetch("http://localhost:4000/api/v1/products/all");
       if (componentMounted) {
-        setData(await response.clone().json());
-        setFilter(await response.json());
+        const { products } = await response.json();
+        setData(products);
+        setFilter(JSON.parse(JSON.stringify(products)));
         setLoading(false);
       }
 
@@ -163,6 +181,19 @@ const Products = () => {
       <div className="container my-3 py-3">
         <div className="row">
           <div className="col-12">
+            <form onSubmit={handleSubmit}>
+              <input 
+                name="query"
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={onSearchQueryChange}
+              />
+              <button type="submit" className="btn btn-dark m-2">
+                Search
+              </button>
+            </form>
+            
             <h2 className="display-5 text-center">Latest Products</h2>
             <hr />
           </div>
