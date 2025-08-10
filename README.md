@@ -50,7 +50,7 @@ install google genai library
 ``npm install @google/genai``
 
 ## AI featured used
-function calling (which translate the user's search query in natural language into structured filter criteria)
+function calling (which translate the user's search query in natural language into structured filter criteria). This is done in the file [gemini.js](https://github.com/Pujakumari1511/ecommerce/blob/main/api/utils/gemini.js)
 
 ## Set up
 generate google api key from google AI studio and save it in .env file with the key GEMINI_API_KEY
